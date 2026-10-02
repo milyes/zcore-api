@@ -1,4 +1,5 @@
 payload.txt
-payload.txt
 .env
 __pycache__/
+*.pyc
+.DS_Store
