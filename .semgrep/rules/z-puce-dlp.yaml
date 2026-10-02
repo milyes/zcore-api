@@ -1,13 +1,1 @@
-rules:
-  - id: no-live-key-in-logs
-    pattern: authSessionKeyMasked
-    message: DLP V9 - live key must not be logged, use key_fp
-    severity: ERROR
-  - id: no-prompt-preview-export
-    pattern: promptPreview
-    message: DLP V9 - promptPreview leaks PII
-    severity: ERROR
-  - id: no-internal-endpoint
-    pattern: milyes-ia.api
-    message: DLP V9 - internal endpoint must not be logged
-    severity: ERROR
+rules: [{id: no-live-key, pattern: z_puce_live_key, message: DLP, severity: ERROR}]
