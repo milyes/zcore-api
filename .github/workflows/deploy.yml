@@ -1,0 +1,15 @@
+name: Secure Production Pipeline
+on: { push: { branches: [main] } }
+permissions: { id-token: write, contents: read, packages: write }
+jobs:
+  build-scan-sign:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: aws-actions/configure-aws-credentials@v4
+      with: { role-to-assume: ${{ secrets.AWS_ROLE_ARN }}, role-session-name: GitHubActions-${{ github.run_id }}, aws-region: us-east-1 }
+    - run: trivy fs --severity CRITICAL,HIGH --exit-code 1 .
+    - uses: docker/build-push-action@v5
+      with: { push: true, tags: ghcr.io/milyes/zcore-api:${{ github.sha }} }
+    - uses: sigstore/cosign-installer@v3
+    - run: cosign sign --yes ghcr.io/milyes/zcore-api@${{ steps.build.outputs.digest }}

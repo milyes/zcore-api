@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata: { name: verify-image-cosign-keyless }
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: verify-cosign
+    match: { any: [{ resources: { kinds: [Pod] } }] }
+    verifyImages:
+    - imageReferences: ["ghcr.io/milyes/zcore-api:*"]
+      attestors:
+      - entries:
+        - keys: { rekor: { url: https://rekor.sigstore.dev }, ctlog: { url: https://ctfe.sigstore.dev } }
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata: { name: enforce-runtime-immutability }
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: require-readonly
+    match: { any: [{ resources: { kinds: [Pod] } }] }
+    validate:
+      message: "readOnlyRootFilesystem, drop ALL, RuntimeDefault required"
+      pattern:
+        spec:
+          containers:
+          - securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities: { drop: [ALL] }
+              runAsNonRoot: true
+              seccompProfile: { type: RuntimeDefault }
